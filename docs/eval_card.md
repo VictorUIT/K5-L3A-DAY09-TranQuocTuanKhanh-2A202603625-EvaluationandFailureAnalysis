@@ -68,3 +68,12 @@ Phát hiện của grader (M3, `python -m lab9.mutation --detect`): 100% dòng f
 
 - Thêm hoặc bỏ item, đổi nhãn (ví dụ thêm item từ trace case với `provenance.from_trace`, thêm adversarial pack ở M5), hoặc đổi `failure_modes` ⇒ tăng `eval_set_version` (v1 → v2), chạy lại baseline trên `main`, commit baseline mới. Gate từ chối so sánh khi `eval_set_sha` khác.
 - Cùng một eval-set version, ngưỡng chỉ được chặt hơn (ratchet); muốn nới phải tăng `metric_spec_version` và ghi lý do trong PRD.
+
+## v2 (M5): adversarial pack và slice gate
+
+- **Eval set v2:** `1189e73d6423`, 28 item × 5 seed (14 v1 + 14 claim của adversarial pack, split `adversarial`), `metric_spec_version` 2.0. Slice gắn theo nhãn, không theo output: `money_movement` 12 item, `adversarial` 14, `denial` 11, `escalation` 4.
+- **Slice gate** (`gate.slice_check`, `config/metric_spec_v2.yaml`), đều chặn release: `money_movement` × `refund_amount_correct` (min 0.95) và × `pass_rate` (min 0.90), `adversarial` × `pass_rate` (min 0.90), `denial` × `pass_rate` (min 0.90), cả bốn kèm "không giảm có ý nghĩa".
+- **Vì sao cần slice:** `slice_regression` (cộng clause ở seed lẻ) có `pass_rate` trung bình 0.9357, trên sàn 0.85, Δ −0.043 CI [−0.121, +0.029] chạm 0 ⇒ gate trung bình cho merge. Riêng slice `money_movement`: 0.85, Δ −0.150 CI [−0.300, +0.000], dưới sàn ⇒ **BLOCK**. Lỗi chỉ nằm ở claim có hoàn tiền nên trung bình trên 28 item pha loãng nó.
+- **Không báo nhầm:** `fixed` và `honest_refactor` qua mọi slice (money_movement 1.0, adversarial 1.0, denial 1.0).
+- Baseline `swarm` trên v2: pass_rate 0.9786; slice money_movement 1.0, adversarial 0.971, denial 0.945. Sàn slice 0.90 nằm dưới mức baseline nhưng trên mức `slice_regression`.
+- Chưa làm: ngưỡng chọn từ A/A và `pass_hat_5` (M6), `integrity_check` (M7); `baseline_v2.json` chưa commit cho tới khi M6–M7 xong (job `eval-gate-v2` chạy cả test của M6–M7).
