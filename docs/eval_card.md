@@ -76,4 +76,22 @@ Phát hiện của grader (M3, `python -m lab9.mutation --detect`): 100% dòng f
 - **Vì sao cần slice:** `slice_regression` (cộng clause ở seed lẻ) có `pass_rate` trung bình 0.9357, trên sàn 0.85, Δ −0.043 CI [−0.121, +0.029] chạm 0 ⇒ gate trung bình cho merge. Riêng slice `money_movement`: 0.85, Δ −0.150 CI [−0.300, +0.000], dưới sàn ⇒ **BLOCK**. Lỗi chỉ nằm ở claim có hoàn tiền nên trung bình trên 28 item pha loãng nó.
 - **Không báo nhầm:** `fixed` và `honest_refactor` qua mọi slice (money_movement 1.0, adversarial 1.0, denial 1.0).
 - Baseline `swarm` trên v2: pass_rate 0.9786; slice money_movement 1.0, adversarial 0.971, denial 0.945. Sàn slice 0.90 nằm dưới mức baseline nhưng trên mức `slice_regression`.
-- Chưa làm: ngưỡng chọn từ A/A và `pass_hat_5` (M6), `integrity_check` (M7); `baseline_v2.json` chưa commit cho tới khi M6–M7 xong (job `eval-gate-v2` chạy cả test của M6–M7).
+
+## v2 (M6): nhiễu, pass@k / pass^k, ngưỡng `pass_hat_5`
+
+- **A/A** (`python -m lab9.mutation --spec config/metric_spec_v2.yaml --aa 66,77,88,99,110`): cùng agent `swarm`, hai bộ seed (11…55 và 66…110) ⇒ Δ = 0 trên **mọi** metric (pass_rate 0.9786, pass_hat_5 0.8929 cả hai). MockLLM tất định theo seed, và lỗi có sẵn của swarm (tin ticket khi seed % 5 == 0) rơi đúng một seed ở mỗi bộ (55 và 110), nên hai bộ cho cùng số.
+- **Với LLM thật dải nhiễu > 0**: cùng prompt, khác lần lấy mẫu cho câu trả lời khác, nên hai lần chạy cùng một bản có thể lệch vài điểm phần trăm. Sàn nằm trong dải đó sẽ chặn PR trung thực một cách ngẫu nhiên; phải chạy A/A nhiều lần, lấy biên độ Δ, và đặt sàn cách baseline nhiều hơn biên độ đó.
+- **Ngưỡng `pass_hat_5` = 0.80, chặn release**: baseline 0.8929, cách sàn ~0.09 (ngoài dải A/A = 0). `flaky_regression` (làm tròn sai ở 1/5 seed) cho pass_hat_5 = 0.5714 ⇒ BLOCK; `pass_rate` trung bình của nó 0.9143 vẫn trên sàn 0.85, chỉ bị chặn nhờ CI. `fixed`, `honest_refactor`: 1.0.
+- pass@k / pass^k (baseline): pass@1 0.9786 · pass@3 1.0 · pass@5 1.0 · pass^3 0.9357 · pass^5 0.8929. pass^k ≤ pass@1 ≤ pass@k; khoảng cách pass@1 − pass^5 ≈ 0.09 là thước đo độ chập chờn.
+- **Giới hạn cỡ mẫu:** một bug chỉ xuất hiện ở 1/3 seed (`rare`: seed chia hết cho 3) chỉ bật ở seed 33 trong bộ 11…55, tức 1/5 lần chạy, và ở bộ khác có thể là 0 hoặc 2 lần. Với 5 seed không phát hiện ổn định được; không hạ ngưỡng để "bắt" nó, mà cần nhiều seed hơn.
+
+## v2 (M7): chống gian lận eval
+
+- **Scorecard** (`python -m lab9.mutation --spec config/metric_spec_v2.yaml --baseline reports/baseline_v2.json`): `fixed` merge · `honest_refactor` merge · `seeded_regression` block · `slice_regression` block (chỉ slice money_movement) · `flaky_regression` block (pass_hat_5) ⇒ **mutation score 3/3 · false alarms 0**.
+- **Trap** (`python -m lab9.traps --pr reports/eval_slice_regression.json --baseline reports/baseline_v2.json --spec config/metric_spec_v2.yaml`): cả 4 trap bị chặn với lý do `INTEGRITY` ⇒ exit 0.
+  - `evaluator_errors_as_nan`: 18 giá trị None trên metric có grader (rơi khỏi trung bình).
+  - `dropped_failing_rows`: 131 dòng thay vì 28 × 5 = 140; tập (item, seed) thiếu 9.
+  - `cherry_picked_seeds`: thiếu 84 (item, seed); seeds [22, 44] ≠ baseline.
+  - `loosened_spec`: ratchet (min hạ, bỏ no_significant_drop, bỏ slice) với `--base-spec`.
+- `gate.integrity_check` còn chặn: metric NaN/inf, dòng (item, seed) trùng lặp, seed trong dòng không có trong manifest, `evaluator_failures` khác rỗng kể cả khi run xanh, metric báo cáo lệch với trung bình tính lại từ dòng (sửa tay số), đổi `seeds`/`eval_set`/`labels` trong spec cùng version, đổi slice tag của item so với baseline.
+- **Trap có thể còn lọt:** sửa đồng thời dòng và metric cho khớp nhau (đổi `False` thành `True` trên dòng): integrity không thấy được vì report tự nhất quán; chỉ chống được bằng cách CI tự chạy lại eval (như job `eval-gate` làm với swarm), không tin report do PR nộp. Baseline bị sửa tay cũng vậy: `ci_check` chặn nhờ so với lần chạy của CI.
