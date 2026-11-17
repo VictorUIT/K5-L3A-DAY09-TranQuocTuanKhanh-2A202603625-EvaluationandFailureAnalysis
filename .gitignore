@@ -2,4 +2,13 @@ __pycache__/
 *.pyc
 src/reports/
 src/traces/
+traces/
 *.sqlite
+
+# Secrets: never commit keys (from the original Day 8 .gitignore)
+.env
+.env.*
+!.env.example
+
+# Instructor-only hidden pack
+src/eval/instructor/
