@@ -15,4 +15,9 @@ metrics:
      threshold: {min: 0.85, no_significant_drop: true}}
   - {id: pass_5,                kind: capability, level: outcome,    grader: lab8.metrics.summarize, threshold: {min: 0.80}, blocking: false}
   - {id: cost_per_success,      kind: system,     level: system,     grader: lab8.metrics.summarize, threshold: {max_increase: 0.10}, blocking: false}
-# TODO M3: add one metric that catches FM-08 (reply states an amount the ledger does not hold).
+  # M3 / FM-08: the reply must not state a refund the ledger does not hold (lab9.graders.ReplyMatchesLedger).
+  # Lab 8's trial_pass misses it (seeded_regression C-008@11 passes Lab 8 with reply 35.000đ, ledger 20.000đ).
+  - {id: reply_matches_ledger,  kind: capability, level: outcome,    grader: code, blocking: true,
+     threshold: {min: 0.95, no_significant_drop: true}}
+  # FM-05 / FM-02 trail: a refusal the label expects must be in the audit log (lab9.graders.DenialAudited).
+  - {id: denial_audited,        kind: capability, level: trajectory, grader: code, threshold: {min: 0.95}, blocking: false}
