@@ -20,7 +20,7 @@ python -m lab9.trace_case --shape fixed --claim C-008 --seed 11   # đối chứ
 
 | Trường | Nội dung |
 |---|---|
-| Trial | `seeded_regression C-008@11`, item E-008, run ID `E-seeded_regression-20261117-b038` (`src/reports/eval_seeded_regression.json`) |
+| Trial | `seeded_regression C-008@11`, item E-008, run ID `E-seeded_regression-20261117-90bf` (`src/reports/eval_seeded_regression.json`) |
 | Triệu chứng | Grader Lab 8 **PASS** (`ok`), `refund_amount_correct` PASS, nhưng `reply_matches_ledger` **FAIL**. Ledger ghi **20.000đ** (đúng nhãn: approval A-008 chỉ duyệt 20.000 < quote 35.000), còn reply nói với khách **"Dạ, LogiX đã hoàn 35.000đ cho đơn O-808."** |
 | Bước sai đầu tiên | Event **5** `reply` `{"text": "Dạ, LogiX đã hoàn 35.000đ cho đơn O-808."}` |
 | Vì sao là bước *đầu tiên* | Event 2 `investigator` đọc đúng O-808 (trễ 4 ngày, phí 35.000). Event 3 `quote` 35.000 đúng `SHIP-LATE-03`. Event 4 `refund_history` 0 đúng: đơn chưa hoàn lần nào, nên bước tự trừ của `pre_deducted` không đổi số và không sinh event `proposal`. Host ghi ledger 20.000 theo trần approval, đúng luật "refund = min(quote, approved, paid)". Sai đầu tiên là lúc soạn reply: agent báo số **nó tự tính** (proposal 35.000) thay vì số host đã ghi (`effect.amount_vnd` 20.000). |

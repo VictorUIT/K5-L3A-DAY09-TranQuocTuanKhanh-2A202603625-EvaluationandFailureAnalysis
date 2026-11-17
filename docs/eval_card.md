@@ -2,8 +2,8 @@
 
 Card này đi kèm mỗi báo cáo và được dùng lại ở Day 10. Mọi số lấy từ report do `python -m lab9.eval` sinh ra (không gõ tay); xem run ID.
 
-- **Run ID / eval set SHA:** baseline `E-swarm-20261117-b038` (`src/reports/baseline_v1.json`) · PR mẫu `E-fixed-20261117-b038`, `E-seeded_regression-20261117-b038` · eval set `b038284e5c26`
-- **Phiên bản:** code: nhánh `starter/d09` (graders tại commit `f457ce0`, `stats.paired_bootstrap` tại `8546e61`) · eval set v1 (sha `b038284e5c26`) · `metric_spec_version` 1.0 · seeds 11/22/33/44/55 · MockLLM · Python 3.12.10 (CI: 3.13)
+- **Run ID / eval set SHA:** baseline `E-swarm-20261117-90bf` (`src/reports/baseline_v1.json`) · PR mẫu `E-fixed-20261117-90bf`, `E-seeded_regression-20261117-90bf` · eval set `90bfb40dfa3c`
+- **Phiên bản:** code: nhánh `starter/d09` (graders tại commit `f457ce0`, `stats.paired_bootstrap` tại `8546e61`) · eval set v1 (sha `90bfb40dfa3c`) · `metric_spec_version` 1.0 · seeds 11/22/33/44/55 · MockLLM · Python 3.12.10 (CI: 3.13)
 - **Eval set:** v1, 14 item × 5 seed = 70 trial/shape, nguồn `lab8_public` (matrix T01–T14), split `regression`; nhãn tách riêng trong `labels_v1.json`; `failure_modes` gán theo `docs/failure_taxonomy.md` (FM-01…FM-08, FM-09 chưa có item).
 - **Agent được đo:** shape `swarm` = `lab8/shapes/swarm_reference.py` của giảng viên (Lab 8 gốc, không sửa).
 
