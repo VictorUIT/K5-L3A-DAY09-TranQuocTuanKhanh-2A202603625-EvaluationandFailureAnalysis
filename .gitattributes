@@ -1,0 +1,3 @@
+# Eval-set files are hashed (eval_set_sha): keep LF on every OS so local and CI SHAs match.
+src/data/eval/*.jsonl text eol=lf
+src/data/eval/*.json text eol=lf
